@@ -1,0 +1,9 @@
+APP_NAME = "XFCE Theme Manager"
+APP_VERSION = "2.2"
+APP_ID = "io.github.ogoncas.XfceThemeManager"
+APP_PRGNAME = "xfce-theme-manager"
+APP_ICON_NAME = "preferences-desktop-theme"
+APP_ICON_NAMES = (APP_ICON_NAME, "org.xfce.settings.appearance", "applications-graphics")
+DEVELOPER = "Mateus Calixto"
+LICENSE_NAME = "MIT"
+GITHUB_URL = "https://github.com/ogoncas/xfce-themes"
