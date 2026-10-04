@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XFCE Theme Manager</title>
+    <meta name="description" content="Aplicativo GTK 3 para gerenciar temas, ícones, papéis de parede, Rofi e Mousepad do XFCE em uma única janela.">
+    <style>
+        :root {
+            --bg: #f4f5f7;
+            --panel: #ffffff;
+            --panel-header: #ebedf0;
+            --border: #d0d5dd;
+            --border-subtle: #e4e7ec;
+            --text: #1d2939;
+            --text-muted: #667085;
+            --accent: #2970a6;
+            --accent-hover: #1f557f;
+            --code-bg: #1e2530;
+            --code-text: #e2e8f0;
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #121820;
+                --panel: #1a212d;
+                --panel-header: #242d3c;
+                --border: #334155;
+                --border-subtle: #242d3c;
+                --text: #f1f5f9;
+                --text-muted: #94a3b8;
+                --accent: #38bdf8;
+                --accent-hover: #7dd3fc;
+                --code-bg: #0d1117;
+                --code-text: #e2e8f0;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Cantarell, Ubuntu, "Segoe UI", system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            font-size: 0.95rem;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrapper {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 2rem 1.25rem;
+            animation: fadeIn 0.35s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+
+        .window-titlebar {
+            background: var(--panel-header);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .window-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .version-badge {
+            background: var(--border);
+            color: var(--text);
+            font-size: 0.725rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: var(--radius-sm);
+            font-family: monospace;
+        }
+
+        .lang-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: var(--bg);
+            border: 1px solid var(--border-subtle);
+            padding: 0.15rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.15rem 0.4rem;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .lang-btn.active {
+            background: var(--panel);
+            color: var(--accent);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .hero-body {
+            padding: 2.25rem 1.75rem;
+        }
+
+        .hero-body h1 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-body p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 680px;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+        }
+
+        .btn:hover {
+            background: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+            color: #ffffff;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .screenshot-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            transition: border-color var(--transition-fast), transform var(--transition-fast);
+        }
+
+        .screenshot-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .screenshot-img-placeholder {
+            width: 100%;
+            height: 160px;
+            background: var(--panel-header);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .screenshot-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .screenshot-caption {
+            padding: 0.65rem 0.85rem;
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .screenshot-caption::after {
+            content: "↗";
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.85rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.1rem;
+            transition: border-color var(--transition-fast), transform var(--transition-fast);
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .feature-card strong {
+            display: block;
+            color: var(--text);
+            font-size: 0.95rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .feature-card span {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+            display: block;
+        }
+
+        .terminal-box {
+            background: var(--code-bg);
+            color: var(--code-text);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            font-family: ui-monospace, SFMono-Regular, "DejaVu Sans Mono", monospace;
+            font-size: 0.875rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .copy-link {
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-family: inherit;
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-sm);
+            transition: color var(--transition-fast), background var(--transition-fast);
+        }
+
+        .copy-link:hover {
+            color: var(--code-text);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .table-container {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        th {
+            background: var(--panel-header);
+            color: var(--text);
+            font-weight: 600;
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: var(--bg);
+        }
+
+        td strong {
+            color: var(--text);
+        }
+
+        code {
+            font-family: ui-monospace, monospace;
+            background: var(--bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.8em;
+            color: var(--text);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .req-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .req-list:last-of-type {
+            margin-bottom: 2rem;
+        }
+
+        .req-item {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.825rem;
+            color: var(--text-muted);
+        }
+
+        .req-item code {
+            border: none;
+            background: transparent;
+            padding: 0;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        footer {
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.825rem;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .install-steps {
+            margin-bottom: 2rem;
+        }
+
+        .install-step {
+            margin-bottom: 1.25rem;
+        }
+
+        .install-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.15rem;
+        }
+
+        .step-desc {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .install-step .terminal-box {
+            margin-bottom: 0;
+            gap: 0.75rem;
+        }
+
+        .cmd {
+            white-space: pre;
+            overflow-x: auto;
+            min-width: 0;
+        }
+
+        .copy-link {
+            flex-shrink: 0;
+        }
+
+        kbd {
+            font-family: ui-monospace, monospace;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-bottom-width: 2px;
+            border-radius: 3px;
+            padding: 0.1rem 0.4rem;
+            font-size: 0.8em;
+            color: var(--text);
+        }
+
+        .req-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .btn:focus-visible,
+        .lang-btn:focus-visible,
+        .copy-link:focus-visible,
+        .screenshot-card:focus-visible,
+        footer a:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .wrapper { animation: none; }
+            * { transition: none !important; }
+        }
+
+        @media (max-width: 640px) {
+            .wrapper {
+                padding: 1rem 0.85rem;
+            }
+
+            .hero-body {
+                padding: 1.5rem 1rem;
+            }
+
+            .hero-body h1 {
+                font-size: 1.5rem;
+            }
+
+            .features-grid, .screenshots-grid {
+                grid-template-columns: 1fr;
+            }
+
+            footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        
+        <header>
+            <div class="window-titlebar">
+                <div class="window-title">
+                    <span>XFCE Theme Manager</span>
+                    <span class="version-badge">v2.2</span>
+                </div>
+                
+                <div class="lang-switch">
+                    <button class="lang-btn" onclick="setLanguage('pt')">PT</button>
+                    <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+                </div>
+            </div>
+
+            <div class="hero-body">
+                <h1 data-i18n="hero_title">Gerenciador de Aparência XFCE</h1>
+                <p data-i18n="hero_desc">Aplicação gráfica leve em Python e GTK3 para alternar temas GTK, conjuntos de ícones, papéis de parede, Rofi e Mousepad em um só lugar.</p>
+
+                <div class="btn-group">
+                    <a href="https://github.com/ogoncas/xfce-theme-manager" target="_blank" class="btn btn-primary">
+                        GitHub &rarr;
+                    </a>
+                    <a href="https://github.com/ogoncas/xfce-theme-manager/releases/latest" target="_blank" rel="noopener" class="btn" data-i18n="btn_download">
+                        Baixar .deb
+                    </a>
+                    <a href="#instalacao" class="btn" data-i18n="btn_usage">
+                        Como Usar
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <h2 class="section-title" data-i18n="title_screenshots">Capturas de Tela</h2>
+        <div class="screenshots-grid">
+            <a href="images/profiles.png" target="_blank" class="screenshot-card">
+                <img src="images/profiles.png" alt="Aba Coleções" data-i18n-alt="img_collections">
+                <div class="screenshot-caption" data-i18n="cap_collections">Gerenciamento de perfis globais</div>
+            </a>
+            
+            <a href="images/wallpapers.png" target="_blank" class="screenshot-card">
+                <img src="images/wallpapers.png" alt="Aba Papéis de Parede" data-i18n-alt="img_wallpapers">
+                <div class="screenshot-caption" data-i18n="cap_wallpapers">Grade de wallpapers com pré-visualização</div>
+            </a>
+            
+            <a href="images/configs.png" target="_blank" class="screenshot-card">
+                <img src="images/configs.png" alt="Configurações" data-i18n-alt="img_settings">
+                <div class="screenshot-caption" data-i18n="cap_settings">Ajuste de pastas extras e estilo de janela</div>
+            </a>
+        </div>
+
+        <h2 class="section-title" data-i18n="title_features">O que o aplicativo gerencia</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <strong data-i18n="feat1_title">Coleções (Perfis Globais)</strong>
+                <span data-i18n="feat1_desc">Salva e aplica combinações de temas GTK, ícones, wallpapers, Rofi e Mousepad com um único clique.</span>
+            </div>
+            <div class="feature-card">
+                <strong data-i18n="feat2_title">Temas GTK3 & XFWM4</strong>
+                <span data-i18n="feat2_desc">Lista e altera temas visuais e decorações de janela das pastas padrão e personalizadas do sistema.</span>
+            </div>
+            <div class="feature-card">
+                <strong data-i18n="feat3_title">Pacotes de Ícones</strong>
+                <span data-i18n="feat3_desc">Detecção dinâmica de temas de ícones instalados e alteração em tempo real via xfconf-query.</span>
+            </div>
+            <div class="feature-card">
+                <strong data-i18n="feat4_title">Papéis de Parede</strong>
+                <span data-i18n="feat4_desc">Navegação visual em grade com pré-visualização e integração ao cache de miniaturas do XFCE/Thunar.</span>
+            </div>
+            <div class="feature-card">
+                <strong data-i18n="feat5_title">Estilos para Rofi</strong>
+                <span data-i18n="feat5_desc">Gerenciamento de temas .rasi com atualização direta na configuração do Rofi.</span>
+            </div>
+            <div class="feature-card">
+                <strong data-i18n="feat6_title">Temas do Mousepad</strong>
+                <span data-i18n="feat6_desc">Suporte aos esquemas de cores gtksourceview via GSettings ou fallback mousepadrc.</span>
+            </div>
+            <div class="feature-card">
+                <strong data-i18n="feat7_title">Pastas extras</strong>
+                <span data-i18n="feat7_desc">Adicione suas próprias pastas de temas, ícones, Rofi, Mousepad e wallpapers. Temas GTK e de ícones fora do caminho padrão são vinculados automaticamente para que o sistema consiga carregá-los.</span>
+            </div>
+            <div class="feature-card">
+                <strong data-i18n="feat8_title">Português e Inglês</strong>
+                <span data-i18n="feat8_desc">O idioma segue o sistema ou pode ser escolhido nas Configurações, junto com a barra de título integrada ou nativa do xfwm4. As mudanças valem sem reiniciar.</span>
+            </div>
+        </div>
+
+        <h2 class="section-title" id="instalacao" data-i18n="title_usage">Instalação</h2>
+        <div class="install-steps">
+            <div class="install-step">
+                <div class="step-title" data-i18n="inst_deb_title">Pacote .deb (Debian, Ubuntu, Xubuntu, Mint)</div>
+                <div class="step-desc" data-i18n="inst_deb_desc">Baixe o .deb na página de Releases e instale. O apt resolve as dependências e o app aparece no menu de aplicativos.</div>
+                <div class="terminal-box">
+                    <span class="cmd">$ sudo apt install ./xfce-theme-manager_*_all.deb</span>
+                    <button class="copy-link" onclick="copyCommand(this)" data-copy="sudo apt install ./xfce-theme-manager_*_all.deb" data-i18n="btn_copy">Copiar</button>
+                </div>
+            </div>
+
+            <div class="install-step">
+                <div class="step-title" data-i18n="inst_src_title">Executar pelo código-fonte</div>
+                <div class="step-desc" data-i18n="inst_src_desc">Só precisa das dependências listadas abaixo.</div>
+                <div class="terminal-box">
+                    <span class="cmd">$ git clone https://github.com/ogoncas/xfce-theme-manager
+$ cd xfce-theme-manager
+$ python3 app.py</span>
+                    <button class="copy-link" onclick="copyCommand(this)" data-copy="git clone https://github.com/ogoncas/xfce-theme-manager&#10;cd xfce-theme-manager&#10;python3 app.py" data-i18n="btn_copy">Copiar</button>
+                </div>
+            </div>
+
+            <div class="install-step">
+                <div class="step-title" data-i18n="inst_build_title">Gerar o .deb</div>
+                <div class="step-desc" data-i18n="inst_build_desc">Cria o pacote na pasta dist/. Precisa apenas do dpkg-deb e não requer sudo.</div>
+                <div class="terminal-box">
+                    <span class="cmd">$ ./packaging/build-deb.sh</span>
+                    <button class="copy-link" onclick="copyCommand(this)" data-copy="./packaging/build-deb.sh" data-i18n="btn_copy">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title" data-i18n="title_shortcuts">Atalhos</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th data-i18n="th_shortcut">Atalho</th>
+                        <th data-i18n="th_action">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>F</kbd></td>
+                        <td data-i18n="sc_find">Focar o filtro da aba atual</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>,</kbd></td>
+                        <td data-i18n="sc_settings">Abrir as Configurações</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>Q</kbd></td>
+                        <td data-i18n="sc_quit">Sair do aplicativo</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="section-title" data-i18n="title_integration">Integração com o Sistema</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th data-i18n="th_resource">Recurso</th>
+                        <th data-i18n="th_dirs">Diretórios Buscados</th>
+                        <th data-i18n="th_method">Método de Aplicação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>GTK</strong></td>
+                        <td><code>~/.themes</code>, XDG share</td>
+                        <td><code>xfconf-query</code> (xsettings & xfwm4)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ícones</strong></td>
+                        <td><code>~/.icons</code>, XDG share</td>
+                        <td><code>xfconf-query</code> (xsettings)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Wallpaper</strong></td>
+                        <td>Backgrounds XDG e <code>~/Imagens</code> (xdg-user-dirs)</td>
+                        <td><code>xfconf-query</code> (xfce4-desktop)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rofi</strong></td>
+                        <td><code>~/.config/rofi/themes</code>, XDG share</td>
+                        <td>Gravação direta em <code>config.rasi</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mousepad</strong></td>
+                        <td>Estilos <code>gtksourceview</code></td>
+                        <td><code>gsettings</code> ou <code>mousepadrc</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="section-title" data-i18n="title_deps">Dependências</h2>
+        <div class="req-label" data-i18n="deps_required">Obrigatórias</div>
+        <div class="req-list">
+            <div class="req-item">Python <code>3</code></div>
+            <div class="req-item"><code>python3-gi</code></div>
+            <div class="req-item"><code>gir1.2-gtk-3.0</code></div>
+            <div class="req-item"><code>gir1.2-gdkpixbuf-2.0</code></div>
+            <div class="req-item"><code>xfconf</code></div>
+        </div>
+        <div class="req-label" data-i18n="deps_optional">Recomendadas</div>
+        <div class="req-list">
+            <div class="req-item"><code>xfdesktop4</code></div>
+            <div class="req-item"><code>xfwm4</code></div>
+            <div class="req-item"><code>mousepad</code></div>
+            <div class="req-item"><code>rofi</code></div>
+        </div>
+
+        <footer>
+            <div><span data-i18n="footer_dev">Desenvolvido por</span> <strong>Mateus Calixto</strong></div>
+            <div class="footer-links">
+                <a href="https://github.com/ogoncas/xfce-theme-manager" target="_blank" rel="noopener" data-i18n="footer_source">Código-fonte</a>
+                <a href="https://github.com/ogoncas/xfce-theme-manager/blob/main/LICENSE" target="_blank" rel="noopener" data-i18n="footer_license">Licença MIT</a>
+                <a href="https://github.com/ogoncas/xfce-theme-manager/blob/main/docs/STRUCTURE.md" target="_blank" rel="noopener" data-i18n="footer_docs">Estrutura do código</a>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        const translations = {
+            pt: {
+                hero_title: "Gerenciador de Aparência XFCE",
+                hero_desc: "Aplicação gráfica leve em Python e GTK3 para alternar temas GTK, conjuntos de ícones, papéis de parede, Rofi e Mousepad em um só lugar.",
+                btn_usage: "Como Usar",
+                title_screenshots: "Capturas de Tela",
+                img_collections: "Aba Coleções",
+                cap_collections: "Gerenciamento de perfis globais",
+                img_wallpapers: "Aba Papéis de Parede",
+                cap_wallpapers: "Grade de wallpapers com pré-visualização",
+                img_settings: "Configurações",
+                cap_settings: "Ajuste de pastas extras e estilo de janela",
+                title_features: "O que o aplicativo gerencia",
+                feat1_title: "Coleções (Perfis Globais)",
+                feat1_desc: "Salva e aplica combinações de temas GTK, ícones, wallpapers, Rofi e Mousepad com um único clique.",
+                feat2_title: "Temas GTK3 & XFWM4",
+                feat2_desc: "Lista e altera temas visuais e decorações de janela das pastas padrão e personalizadas do sistema.",
+                feat3_title: "Pacotes de Ícones",
+                feat3_desc: "Detecção dinâmica de temas de ícones instalados e alteração em tempo real via xfconf-query.",
+                feat4_title: "Papéis de Parede",
+                feat4_desc: "Navegação visual em grade com pré-visualização e integração ao cache de miniaturas do XFCE/Thunar.",
+                feat5_title: "Estilos para Rofi",
+                feat5_desc: "Gerenciamento de temas .rasi com atualização direta na configuração do Rofi.",
+                feat6_title: "Temas do Mousepad",
+                feat6_desc: "Suporte aos esquemas de cores gtksourceview via GSettings ou fallback mousepadrc.",
+                title_usage: "Instalação",
+                btn_copy: "Copiar",
+                btn_copied: "Copiado!",
+                title_integration: "Integração com o Sistema",
+                th_resource: "Recurso",
+                th_dirs: "Diretórios Buscados",
+                th_method: "Método de Aplicação",
+                title_deps: "Dependências",
+                footer_dev: "Desenvolvido por",
+                btn_download: "Baixar .deb",
+                feat7_title: "Pastas extras",
+                feat7_desc: "Adicione suas próprias pastas de temas, ícones, Rofi, Mousepad e wallpapers. Temas GTK e de ícones fora do caminho padrão são vinculados automaticamente para que o sistema consiga carregá-los.",
+                feat8_title: "Português e Inglês",
+                feat8_desc: "O idioma segue o sistema ou pode ser escolhido nas Configurações, junto com a barra de título integrada ou nativa do xfwm4. As mudanças valem sem reiniciar.",
+                inst_deb_title: "Pacote .deb (Debian, Ubuntu, Xubuntu, Mint)",
+                inst_deb_desc: "Baixe o .deb na página de Releases e instale. O apt resolve as dependências e o app aparece no menu de aplicativos.",
+                inst_src_title: "Executar pelo código-fonte",
+                inst_src_desc: "Só precisa das dependências listadas abaixo.",
+                inst_build_title: "Gerar o .deb",
+                inst_build_desc: "Cria o pacote na pasta dist/. Precisa apenas do dpkg-deb e não requer sudo.",
+                title_shortcuts: "Atalhos",
+                th_shortcut: "Atalho",
+                th_action: "Ação",
+                sc_find: "Focar o filtro da aba atual",
+                sc_settings: "Abrir as Configurações",
+                sc_quit: "Sair do aplicativo",
+                deps_required: "Obrigatórias",
+                deps_optional: "Recomendadas",
+                footer_license: "Licença MIT",
+                footer_docs: "Estrutura do código",
+                footer_source: "Código-fonte"
+            },
+            en: {
+                hero_title: "XFCE Theme Manager",
+                hero_desc: "A lightweight GTK3 Python graphical application to manage GTK themes, icon packs, wallpapers, Rofi, and Mousepad styles in one place.",
+                btn_usage: "How to Use",
+                title_screenshots: "Screenshots",
+                img_collections: "Collections Tab",
+                cap_collections: "Global profile management",
+                img_wallpapers: "Wallpapers Tab",
+                cap_wallpapers: "Thumbnail wallpaper grid with preview",
+                img_settings: "Settings",
+                cap_settings: "Extra folders and titlebar style adjustments",
+                title_features: "Features Managed",
+                feat1_title: "Collections (Global Profiles)",
+                feat1_desc: "Save and apply complete GTK, icon, wallpaper, Rofi, and Mousepad theme combinations in one click.",
+                feat2_title: "GTK3 & XFWM4 Themes",
+                feat2_desc: "List and switch visual themes and window decorations from system and custom directories.",
+                feat3_title: "Icon Themes",
+                feat3_desc: "Dynamic detection of installed icon packs with real-time updates via xfconf-query.",
+                feat4_title: "Wallpapers",
+                feat4_desc: "Grid-based browser with live preview integrated with the XFCE/Thunar thumbnail cache.",
+                feat5_title: "Rofi Styles",
+                feat5_desc: "Manage .rasi themes with direct configuration file updates.",
+                feat6_title: "Mousepad Themes",
+                feat6_desc: "Support for gtksourceview color schemes using GSettings or mousepadrc fallback.",
+                title_usage: "Installation",
+                btn_copy: "Copy",
+                btn_copied: "Copied!",
+                title_integration: "System Integration",
+                th_resource: "Component",
+                th_dirs: "Scanned Directories",
+                th_method: "Application Method",
+                title_deps: "Dependencies",
+                footer_dev: "Developed by",
+                btn_download: "Download .deb",
+                feat7_title: "Extra folders",
+                feat7_desc: "Add your own folders for themes, icons, Rofi, Mousepad and wallpapers. GTK and icon themes outside the default path are linked automatically so the system can load them.",
+                feat8_title: "Portuguese and English",
+                feat8_desc: "The language follows the system or can be set in Settings, along with the integrated or native xfwm4 title bar. Changes apply without restarting.",
+                inst_deb_title: "Debian package (Debian, Ubuntu, Xubuntu, Mint)",
+                inst_deb_desc: "Download the .deb from the Releases page and install it. apt resolves the dependencies and the app shows up in the application menu.",
+                inst_src_title: "Run from source",
+                inst_src_desc: "Only the dependencies listed below are needed.",
+                inst_build_title: "Build the .deb",
+                inst_build_desc: "Creates the package in the dist/ folder. Needs only dpkg-deb and does not require sudo.",
+                title_shortcuts: "Shortcuts",
+                th_shortcut: "Shortcut",
+                th_action: "Action",
+                sc_find: "Focus the current tab's filter",
+                sc_settings: "Open Settings",
+                sc_quit: "Quit the app",
+                deps_required: "Required",
+                deps_optional: "Recommended",
+                footer_license: "MIT License",
+                footer_docs: "Code structure",
+                footer_source: "Source code"
+            }
+        };
+
+        let currentLang = 'pt';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(elem => {
+                const key = elem.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    elem.innerText = translations[lang][key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-alt]').forEach(img => {
+                const key = img.getAttribute('data-i18n-alt');
+                if (translations[lang][key]) {
+                    img.alt = translations[lang][key];
+                }
+            });
+
+            document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toLowerCase() === lang);
+            });
+        }
+
+        function copyCommand(btn) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(btn.dataset.copy);
+            }
+            btn.innerText = translations[currentLang].btn_copied;
+            setTimeout(() => {
+                btn.innerText = translations[currentLang].btn_copy;
+            }, 2000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const userLang = navigator.language || navigator.userLanguage;
+            if (userLang.startsWith('pt')) {
+                setLanguage('pt');
+            } else {
+                setLanguage('en');
+            }
+        });
+    </script>
+
+</body>
+</html>
