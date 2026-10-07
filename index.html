@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XFCE Theme Manager</title>
-    <meta name="description" content="Aplicativo GTK 3 para gerenciar temas, ícones, papéis de parede, Rofi e Mousepad do XFCE em uma única janela.">
+    <meta name="description" content="Aplicativo GTK 3 para gerenciar temas GTK e XFWM, ícones, fontes, papéis de parede, Rofi e Mousepad do XFCE em uma única janela.">
     <style>
         :root {
             --bg: #f4f5f7;
@@ -537,13 +537,13 @@
 
             <div class="hero-body">
                 <h1 data-i18n="hero_title">Gerenciador de Aparência XFCE</h1>
-                <p data-i18n="hero_desc">Aplicação gráfica leve em Python e GTK3 para alternar temas GTK, conjuntos de ícones, papéis de parede, Rofi e Mousepad em um só lugar.</p>
+                <p data-i18n="hero_desc">Aplicação gráfica leve em Python e GTK3 para alternar temas GTK e XFWM, ícones, fontes, papéis de parede, Rofi e Mousepad em um só lugar.</p>
 
                 <div class="btn-group">
-                    <a href="https://github.com/ogoncas/xfce-theme-manager" target="_blank" class="btn btn-primary">
+                    <a href="https://github.com/ogoncas/xfce-themes" target="_blank" class="btn btn-primary">
                         GitHub &rarr;
                     </a>
-                    <a href="https://github.com/ogoncas/xfce-theme-manager/releases/latest" target="_blank" rel="noopener" class="btn" data-i18n="btn_download">
+                    <a href="https://github.com/ogoncas/xfce-themes/releases/latest" target="_blank" rel="noopener" class="btn" data-i18n="btn_download">
                         Baixar .deb
                     </a>
                     <a href="#instalacao" class="btn" data-i18n="btn_usage">
@@ -575,15 +575,23 @@
         <div class="features-grid">
             <div class="feature-card">
                 <strong data-i18n="feat1_title">Coleções (Perfis Globais)</strong>
-                <span data-i18n="feat1_desc">Salva e aplica combinações de temas GTK, ícones, wallpapers, Rofi e Mousepad com um único clique.</span>
+                <span data-i18n="feat1_desc">Salva e aplica combinações de temas GTK e XFWM, ícones, wallpapers, Rofi e Mousepad com um único clique.</span>
             </div>
             <div class="feature-card">
-                <strong data-i18n="feat2_title">Temas GTK3 & XFWM4</strong>
-                <span data-i18n="feat2_desc">Lista e altera temas visuais e decorações de janela das pastas padrão e personalizadas do sistema.</span>
+                <strong data-i18n="feat2_title">Temas GTK3</strong>
+                <span data-i18n="feat2_desc">Lista e altera o tema visual dos aplicativos a partir das pastas padrão e personalizadas do sistema.</span>
+            </div>
+            <div class="feature-card">
+                <strong data-i18n="feat9_title">Temas XFWM</strong>
+                <span data-i18n="feat9_desc">Aba própria para a decoração das janelas (bordas e botões do xfwm4), independente do tema GTK.</span>
             </div>
             <div class="feature-card">
                 <strong data-i18n="feat3_title">Pacotes de Ícones</strong>
                 <span data-i18n="feat3_desc">Detecção dinâmica de temas de ícones instalados e alteração em tempo real via xfconf-query.</span>
+            </div>
+            <div class="feature-card">
+                <strong data-i18n="feat10_title">Fontes</strong>
+                <span data-i18n="feat10_desc">Escolha a fonte da interface, do título das janelas, a monoespaçada e a do terminal. Só o que você alterou é aplicado.</span>
             </div>
             <div class="feature-card">
                 <strong data-i18n="feat4_title">Papéis de Parede</strong>
@@ -622,10 +630,10 @@
                 <div class="step-title" data-i18n="inst_src_title">Executar pelo código-fonte</div>
                 <div class="step-desc" data-i18n="inst_src_desc">Só precisa das dependências listadas abaixo.</div>
                 <div class="terminal-box">
-                    <span class="cmd">$ git clone https://github.com/ogoncas/xfce-theme-manager
-$ cd xfce-theme-manager
+                    <span class="cmd">$ git clone https://github.com/ogoncas/xfce-themes
+$ cd xfce-themes
 $ python3 app.py</span>
-                    <button class="copy-link" onclick="copyCommand(this)" data-copy="git clone https://github.com/ogoncas/xfce-theme-manager&#10;cd xfce-theme-manager&#10;python3 app.py" data-i18n="btn_copy">Copiar</button>
+                    <button class="copy-link" onclick="copyCommand(this)" data-copy="git clone https://github.com/ogoncas/xfce-themes&#10;cd xfce-themes&#10;python3 app.py" data-i18n="btn_copy">Copiar</button>
                 </div>
             </div>
 
@@ -679,12 +687,22 @@ $ python3 app.py</span>
                     <tr>
                         <td><strong>GTK</strong></td>
                         <td><code>~/.themes</code>, XDG share</td>
-                        <td><code>xfconf-query</code> (xsettings & xfwm4)</td>
+                        <td><code>xfconf-query</code> (xsettings)</td>
                     </tr>
                     <tr>
-                        <td><strong>Ícones</strong></td>
+                        <td><strong>XFWM</strong></td>
+                        <td><code>~/.themes</code>, XDG share (<code>xfwm4/themerc</code>)</td>
+                        <td><code>xfconf-query</code> (xfwm4)</td>
+                    </tr>
+                    <tr>
+                        <td><strong data-i18n="row_icons">Ícones</strong></td>
                         <td><code>~/.icons</code>, XDG share</td>
                         <td><code>xfconf-query</code> (xsettings)</td>
+                    </tr>
+                    <tr>
+                        <td><strong data-i18n="row_fonts">Fontes</strong></td>
+                        <td>&mdash;</td>
+                        <td><code>xfconf-query</code> (xsettings, xfwm4), <code>terminalrc</code></td>
                     </tr>
                     <tr>
                         <td><strong>Wallpaper</strong></td>
@@ -725,9 +743,9 @@ $ python3 app.py</span>
         <footer>
             <div><span data-i18n="footer_dev">Desenvolvido por</span> <strong>Mateus Calixto</strong></div>
             <div class="footer-links">
-                <a href="https://github.com/ogoncas/xfce-theme-manager" target="_blank" rel="noopener" data-i18n="footer_source">Código-fonte</a>
-                <a href="https://github.com/ogoncas/xfce-theme-manager/blob/main/LICENSE" target="_blank" rel="noopener" data-i18n="footer_license">Licença MIT</a>
-                <a href="https://github.com/ogoncas/xfce-theme-manager/blob/main/docs/STRUCTURE.md" target="_blank" rel="noopener" data-i18n="footer_docs">Estrutura do código</a>
+                <a href="https://github.com/ogoncas/xfce-themes" target="_blank" rel="noopener" data-i18n="footer_source">Código-fonte</a>
+                <a href="https://github.com/ogoncas/xfce-themes/blob/main/LICENSE" target="_blank" rel="noopener" data-i18n="footer_license">Licença MIT</a>
+                <a href="https://github.com/ogoncas/xfce-themes/blob/main/docs/STRUCTURE.md" target="_blank" rel="noopener" data-i18n="footer_docs">Estrutura do código</a>
             </div>
         </footer>
 
@@ -737,7 +755,7 @@ $ python3 app.py</span>
         const translations = {
             pt: {
                 hero_title: "Gerenciador de Aparência XFCE",
-                hero_desc: "Aplicação gráfica leve em Python e GTK3 para alternar temas GTK, conjuntos de ícones, papéis de parede, Rofi e Mousepad em um só lugar.",
+                hero_desc: "Aplicação gráfica leve em Python e GTK3 para alternar temas GTK e XFWM, ícones, fontes, papéis de parede, Rofi e Mousepad em um só lugar.",
                 btn_usage: "Como Usar",
                 title_screenshots: "Capturas de Tela",
                 img_collections: "Aba Coleções",
@@ -748,9 +766,15 @@ $ python3 app.py</span>
                 cap_settings: "Ajuste de pastas extras e estilo de janela",
                 title_features: "O que o aplicativo gerencia",
                 feat1_title: "Coleções (Perfis Globais)",
-                feat1_desc: "Salva e aplica combinações de temas GTK, ícones, wallpapers, Rofi e Mousepad com um único clique.",
-                feat2_title: "Temas GTK3 & XFWM4",
-                feat2_desc: "Lista e altera temas visuais e decorações de janela das pastas padrão e personalizadas do sistema.",
+                feat1_desc: "Salva e aplica combinações de temas GTK e XFWM, ícones, wallpapers, Rofi e Mousepad com um único clique.",
+                feat2_title: "Temas GTK3",
+                feat2_desc: "Lista e altera o tema visual dos aplicativos a partir das pastas padrão e personalizadas do sistema.",
+                feat9_title: "Temas XFWM",
+                feat9_desc: "Aba própria para a decoração das janelas (bordas e botões do xfwm4), independente do tema GTK.",
+                feat10_title: "Fontes",
+                feat10_desc: "Escolha a fonte da interface, do título das janelas, a monoespaçada e a do terminal. Só o que você alterou é aplicado.",
+                row_icons: "Ícones",
+                row_fonts: "Fontes",
                 feat3_title: "Pacotes de Ícones",
                 feat3_desc: "Detecção dinâmica de temas de ícones instalados e alteração em tempo real via xfconf-query.",
                 feat4_title: "Papéis de Parede",
@@ -793,7 +817,7 @@ $ python3 app.py</span>
             },
             en: {
                 hero_title: "XFCE Theme Manager",
-                hero_desc: "A lightweight GTK3 Python graphical application to manage GTK themes, icon packs, wallpapers, Rofi, and Mousepad styles in one place.",
+                hero_desc: "A lightweight GTK3 Python graphical application to manage GTK and XFWM themes, icons, fonts, wallpapers, Rofi, and Mousepad styles in one place.",
                 btn_usage: "How to Use",
                 title_screenshots: "Screenshots",
                 img_collections: "Collections Tab",
@@ -804,9 +828,15 @@ $ python3 app.py</span>
                 cap_settings: "Extra folders and titlebar style adjustments",
                 title_features: "Features Managed",
                 feat1_title: "Collections (Global Profiles)",
-                feat1_desc: "Save and apply complete GTK, icon, wallpaper, Rofi, and Mousepad theme combinations in one click.",
-                feat2_title: "GTK3 & XFWM4 Themes",
-                feat2_desc: "List and switch visual themes and window decorations from system and custom directories.",
+                feat1_desc: "Save and apply complete GTK, XFWM, icon, wallpaper, Rofi, and Mousepad combinations in one click.",
+                feat2_title: "GTK3 Themes",
+                feat2_desc: "List and switch the application theme from system and custom directories.",
+                feat9_title: "XFWM Themes",
+                feat9_desc: "A tab of its own for window decorations (xfwm4 borders and buttons), independent of the GTK theme.",
+                feat10_title: "Fonts",
+                feat10_desc: "Pick the interface, window title, monospace and terminal fonts. Only what you changed is applied.",
+                row_icons: "Icons",
+                row_fonts: "Fonts",
                 feat3_title: "Icon Themes",
                 feat3_desc: "Dynamic detection of installed icon packs with real-time updates via xfconf-query.",
                 feat4_title: "Wallpapers",
