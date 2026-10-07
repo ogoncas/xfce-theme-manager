@@ -21,7 +21,7 @@ Debian, Ubuntu, Xubuntu, Mint:
 sudo apt install ./xfce-theme-manager_2.1_all.deb
 ```
 
-Download the `.deb` from the [Releases](https://github.com/ogoncas/xfce-themes/releases) page, then launch **XFCE Theme Manager** from the menu or run `xfce-theme-manager`.
+Download the `.deb` from the [Releases](https://github.com/ogoncas/xfce-themes/releases) page, then launch **XFCE Theme Manager** from the menu, from Settings Manager (Personal section) or run `xfce-theme-manager`.
 
 ## Run from source
 
