@@ -6,7 +6,7 @@ set -eu
 SRC="$(cd "$(dirname "$0")/.." && pwd)"
 PKG=xfce-theme-manager
 VERSION="$(sed -n 's/^APP_VERSION = "\(.*\)"/\1/p' "$SRC/xfce_theme_manager/constants.py")"
-MAINTAINER="${MAINTAINER:-Mateus Calixto <contato@mateuscalixto.com.br>}"
+MAINTAINER="${MAINTAINER:-Mateus Calixto <noreply@users.noreply.github.com>}"
 BUILD="$(mktemp -d)"
 ROOT="$BUILD/${PKG}_${VERSION}_all"
 trap 'rm -rf "$BUILD"' EXIT
@@ -25,20 +25,21 @@ exec python3 /usr/lib/$PKG/app.py "\$@"
 LAUNCHER
 chmod 755 "$ROOT/usr/bin/$PKG"
 
-# Menu entry (StartupWMClass matches the program name set in main())
+# Menu entry. The X-XFCE-* categories also list it in Settings Manager > Personal
+# (StartupWMClass matches the program name set in main())
 install -d "$ROOT/usr/share/applications"
 cat > "$ROOT/usr/share/applications/$PKG.desktop" <<DESKTOP
 [Desktop Entry]
 Type=Application
 Name=XFCE Theme Manager
 Name[pt_BR]=Gerenciador de Temas do XFCE
-Comment=Manage GTK, icon, Rofi and Mousepad themes and wallpapers
-Comment[pt_BR]=Gerencie temas GTK, de ícones, Rofi, Mousepad e papéis de parede
+Comment=Manage GTK, XFWM, icon, Rofi and Mousepad themes, fonts and wallpapers
+Comment[pt_BR]=Gerencie temas GTK, XFWM, de ícones, Rofi, Mousepad, fontes e papéis de parede
 Exec=$PKG
 Icon=preferences-desktop-theme
 Terminal=false
-Categories=Settings;DesktopSettings;GTK;
-Keywords=theme;icons;wallpaper;rofi;mousepad;xfce;tema;
+Categories=Settings;DesktopSettings;GTK;X-XFCE-SettingsDialog;X-XFCE-PersonalSettings;
+Keywords=theme;xfwm;icons;fonts;wallpaper;rofi;mousepad;xfce;tema;fontes;
 StartupWMClass=$PKG
 DESKTOP
 chmod 644 "$ROOT/usr/share/applications/$PKG.desktop"
