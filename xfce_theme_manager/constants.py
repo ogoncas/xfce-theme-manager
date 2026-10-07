@@ -1,5 +1,5 @@
 APP_NAME = "XFCE Theme Manager"
-APP_VERSION = "2.2"
+APP_VERSION = "2.3"
 APP_ID = "io.github.ogoncas.XfceThemeManager"
 APP_PRGNAME = "xfce-theme-manager"
 APP_ICON_NAME = "preferences-desktop-theme"

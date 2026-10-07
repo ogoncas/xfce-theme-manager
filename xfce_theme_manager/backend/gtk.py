@@ -22,8 +22,5 @@ def set_gtk_theme(name):
         ensure_searchable(path, DEFAULT_GTK_DIRS, os.path.join(GLib.get_user_data_dir(), "themes"))
     try:
         xfconf_set("xsettings", "/Net/ThemeName", name)
-        # Only switch the xfwm4 theme if it ships window decorations, otherwise borders break
-        if path is None or os.path.isdir(os.path.join(path, "xfwm4")):
-            xfconf_set("xfwm4", "/general/theme", name)
     except BackendError as e:
         raise BackendError(_("err_gtk_apply", detail=str(e))) from e

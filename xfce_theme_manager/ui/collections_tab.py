@@ -4,15 +4,18 @@ from gi.repository import GLib, Gtk
 
 from ..backend import (
     apply_collection,
+    collection_xfwm,
     get_current_gtk_theme,
     get_current_icon_theme,
     get_current_mousepad_theme,
     get_current_rofi_theme,
     get_current_wallpaper,
+    get_current_xfwm_theme,
     get_gtk_themes,
     get_icon_themes,
     get_mousepad_themes,
     get_rofi_themes,
+    get_xfwm_themes,
 )
 from ..config import load_collections, save_collections
 from ..i18n import _
@@ -38,7 +41,7 @@ class EditCollectionDialog(Gtk.Dialog):
             _("cancel"), Gtk.ResponseType.CANCEL,
             _("save"), Gtk.ResponseType.OK,
         )
-        self.set_default_size(450, 360)
+        self.set_default_size(450, 400)
 
         box = self.get_content_area()
         box.set_spacing(10)
@@ -57,9 +60,13 @@ class EditCollectionDialog(Gtk.Dialog):
         grid.attach(Gtk.Label(label=_("label_gtk"), xalign=0), 0, 1, 1, 1)
         grid.attach(self.combo_gtk, 1, 1, 1, 1)
 
+        self.combo_xfwm = self._make_combo(get_xfwm_themes(), collection_xfwm(col_data))
+        grid.attach(Gtk.Label(label=_("label_xfwm"), xalign=0), 0, 2, 1, 1)
+        grid.attach(self.combo_xfwm, 1, 2, 1, 1)
+
         self.combo_icon = self._make_combo(get_icon_themes(), col_data.get("icon"))
-        grid.attach(Gtk.Label(label=_("label_icons"), xalign=0), 0, 2, 1, 1)
-        grid.attach(self.combo_icon, 1, 2, 1, 1)
+        grid.attach(Gtk.Label(label=_("label_icons"), xalign=0), 0, 3, 1, 1)
+        grid.attach(self.combo_icon, 1, 3, 1, 1)
 
         self.entry_wall = Gtk.Entry(text=col_data.get("wallpaper", ""))
         self.entry_wall.set_hexpand(True)
@@ -68,18 +75,18 @@ class EditCollectionDialog(Gtk.Dialog):
         wall_box = Gtk.Box(spacing=6)
         wall_box.pack_start(self.entry_wall, True, True, 0)
         wall_box.pack_start(browse_btn, False, False, 0)
-        grid.attach(Gtk.Label(label=_("label_wallpaper"), xalign=0), 0, 3, 1, 1)
-        grid.attach(wall_box, 1, 3, 1, 1)
+        grid.attach(Gtk.Label(label=_("label_wallpaper"), xalign=0), 0, 4, 1, 1)
+        grid.attach(wall_box, 1, 4, 1, 1)
 
         self.combo_rofi = self._make_combo(
             get_rofi_themes(), col_data.get("rofi"), display_fn=os.path.basename
         )
-        grid.attach(Gtk.Label(label=_("label_rofi"), xalign=0), 0, 4, 1, 1)
-        grid.attach(self.combo_rofi, 1, 4, 1, 1)
+        grid.attach(Gtk.Label(label=_("label_rofi"), xalign=0), 0, 5, 1, 1)
+        grid.attach(self.combo_rofi, 1, 5, 1, 1)
 
         self.combo_mouse = self._make_combo(get_mousepad_themes(), col_data.get("mousepad"))
-        grid.attach(Gtk.Label(label=_("label_mousepad"), xalign=0), 0, 5, 1, 1)
-        grid.attach(self.combo_mouse, 1, 5, 1, 1)
+        grid.attach(Gtk.Label(label=_("label_mousepad"), xalign=0), 0, 6, 1, 1)
+        grid.attach(self.combo_mouse, 1, 6, 1, 1)
 
         self.set_default_response(Gtk.ResponseType.OK)
         self.show_all()
@@ -133,7 +140,10 @@ class EditCollectionDialog(Gtk.Dialog):
             "rofi": self.combo_rofi.get_active_id(),
             "mousepad": self.combo_mouse.get_active_id(),
         }
-        return self.entry_name.get_text().strip(), {k: v for k, v in data.items() if v}
+        result = {k: v for k, v in data.items() if v}
+        # Always stored, so an empty value means "leave the XFWM theme alone"
+        result["xfwm"] = self.combo_xfwm.get_active_id() or ""
+        return self.entry_name.get_text().strip(), result
 
 
 class CollectionsTab(Gtk.Box):
@@ -209,6 +219,10 @@ class CollectionsTab(Gtk.Box):
         else:
             esc = GLib.markup_escape_text
             na = "N/A"
+
+            def base(value):
+                return os.path.basename(value) if value else na
+
             for name, data in sorted(self.collections.items(), key=lambda kv: kv[0].lower()):
                 row = Gtk.ListBoxRow()
                 row.col_name = name
@@ -216,10 +230,11 @@ class CollectionsTab(Gtk.Box):
                 details = (
                     f"<b>{esc(name)}</b>\n"
                     f" • {esc(_('label_gtk'))} {esc(data.get('gtk') or na)}"
-                    f" | {esc(_('label_icons'))} {esc(data.get('icon') or na)}\n"
-                    f" • {esc(_('label_rofi'))} {esc(os.path.basename(data.get('rofi') or na))}"
-                    f" | {esc(_('label_wallpaper'))} {esc(os.path.basename(data.get('wallpaper') or na))}\n"
-                    f" • {esc(_('label_mousepad'))} {esc(data.get('mousepad') or na)}"
+                    f" | {esc(_('label_xfwm'))} {esc(collection_xfwm(data) or na)}\n"
+                    f" • {esc(_('label_icons'))} {esc(data.get('icon') or na)}"
+                    f" | {esc(_('label_wallpaper'))} {esc(base(data.get('wallpaper')))}\n"
+                    f" • {esc(_('label_rofi'))} {esc(base(data.get('rofi')))}"
+                    f" | {esc(_('label_mousepad'))} {esc(data.get('mousepad') or na)}"
                 )
                 lbl = Gtk.Label(xalign=0)
                 lbl.set_markup(details)
@@ -258,6 +273,7 @@ class CollectionsTab(Gtk.Box):
             "mousepad": get_current_mousepad_theme(),
         }
         current_data = {k: v for k, v in current_data.items() if v}
+        current_data["xfwm"] = get_current_xfwm_theme() or ""
 
         self.collections[name] = current_data
         save_collections(self.collections)

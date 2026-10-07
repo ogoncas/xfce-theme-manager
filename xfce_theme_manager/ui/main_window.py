@@ -7,20 +7,24 @@ from ..backend import (
     get_current_icon_theme,
     get_current_mousepad_theme,
     get_current_rofi_theme,
+    get_current_xfwm_theme,
     get_gtk_themes,
     get_icon_themes,
     get_mousepad_themes,
     get_rofi_themes,
+    get_xfwm_themes,
     rofi_theme_matches,
     set_gtk_theme,
     set_icon_theme,
     set_mousepad_theme,
     set_rofi_theme,
+    set_xfwm_theme,
 )
 from ..config import get_full_config, load_config, save_config
 from ..constants import APP_ICON_NAMES
 from ..i18n import _
 from .collections_tab import CollectionsTab
+from .fonts_tab import FontsTab
 from .settings_window import SettingsWindow
 from .theme_list import ThemeList
 from .wallpaper_tab import WallpaperTab
@@ -35,7 +39,9 @@ class MainWindow(Gtk.ApplicationWindow):
     PAGES = (
         ("collections", "tab_collections"),
         ("gtk", "tab_gtk"),
+        ("xfwm", "tab_xfwm"),
         ("icons", "tab_icons"),
+        ("fonts", "tab_fonts"),
         ("wallpaper", "tab_wallpaper"),
         ("mousepad", "tab_mousepad"),
         ("rofi", "tab_rofi"),
@@ -45,6 +51,7 @@ class MainWindow(Gtk.ApplicationWindow):
         super().__init__(application=app)
         self.app = app
         self._holders = {}
+        self._tab_buttons = {}
         self._built = set()
         self._toast_timeout = 0
         self._destroyed = False
@@ -81,11 +88,10 @@ class MainWindow(Gtk.ApplicationWindow):
         for name, title_key in self.PAGES:
             holder = Gtk.Box()
             self._holders[name] = holder
-            self.stack.add_titled(holder, name, _(title_key))
+            self.stack.add_named(holder, name)
         self.stack.connect("notify::visible-child-name", self._on_visible_child)
 
-        switcher = Gtk.StackSwitcher()
-        switcher.set_stack(self.stack)
+        switcher = self._build_switcher()
         switcher.set_halign(Gtk.Align.CENTER)
 
         # Toast bar at the top for quick, non-blocking messages
@@ -122,12 +128,36 @@ class MainWindow(Gtk.ApplicationWindow):
         self.connect("delete-event", self._on_delete_event)
         self.connect("destroy", self._on_destroy)
 
+    # Own tab bar instead of Gtk.StackSwitcher, which gives every tab the widest label's width
+    def _build_switcher(self):
+        box = Gtk.Box()
+        box.get_style_context().add_class("linked")
+        self._tab_buttons = {}
+        group = None
+        for name, title_key in self.PAGES:
+            button = Gtk.RadioButton.new_with_label_from_widget(group, _(title_key))
+            button.set_mode(False)
+            button.connect("toggled", self._on_tab_toggled, name)
+            box.pack_start(button, False, False, 0)
+            self._tab_buttons[name] = button
+            group = group or button
+        return box
+
+    def _on_tab_toggled(self, button, name):
+        if button.get_active():
+            self.stack.set_visible_child_name(name)
+
     def _build_page(self, name):
         if name == "collections":
             return CollectionsTab()
         if name == "gtk":
             return ThemeList(get_gtk_themes, get_current_gtk_theme, set_gtk_theme,
                              empty_msg_key="empty_gtk")
+        if name == "xfwm":
+            return ThemeList(get_xfwm_themes, get_current_xfwm_theme, set_xfwm_theme,
+                             empty_msg_key="empty_xfwm")
+        if name == "fonts":
+            return FontsTab()
         if name == "icons":
             return ThemeList(get_icon_themes, get_current_icon_theme, set_icon_theme,
                              empty_msg_key="empty_icons")
@@ -161,7 +191,11 @@ class MainWindow(Gtk.ApplicationWindow):
         return False
 
     def _on_visible_child(self, stack, pspec):
-        self._ensure_page(stack.get_visible_child_name())
+        name = stack.get_visible_child_name()
+        self._ensure_page(name)
+        button = self._tab_buttons.get(name)
+        if button is not None and not button.get_active():
+            button.set_active(True)
 
     def _current_page(self):
         holder = self.stack.get_visible_child()
