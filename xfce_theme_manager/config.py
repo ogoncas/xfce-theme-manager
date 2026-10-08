@@ -5,7 +5,7 @@ import os
 from gi.repository import GLib
 
 from .fileio import atomic_write_text
-from .paths import DEFAULT_WALLPAPER_DIRS, dedupe
+from .paths import dedupe, default_wallpaper_dirs
 
 
 CONFIG_DIR = os.path.join(GLib.get_user_config_dir(), "xfce-theme-manager")
@@ -85,7 +85,10 @@ def get_full_config():
     """Return an independent copy of the config with all keys present."""
     cfg = copy.deepcopy(load_config())
     if _normalize_config(cfg):
-        save_config(cfg)
+        try:
+            save_config(cfg)
+        except OSError:
+            pass
     return cfg
 
 
@@ -97,7 +100,7 @@ def custom_folders(key):
 
 
 def load_wallpaper_folders():
-    return dedupe(DEFAULT_WALLPAPER_DIRS + custom_folders("wallpaper_folders"))
+    return dedupe(default_wallpaper_dirs() + custom_folders("wallpaper_folders"))
 
 
 def load_collections():

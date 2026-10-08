@@ -133,15 +133,16 @@ class ThemeList(Gtk.Box):
         for child in self.listbox.get_children():
             self.listbox.remove(child)
 
-        to_select = None
+        to_select = current_row = None
         for item in self.all_items:
             row = self._make_row(item)
             self.listbox.add(row)
-            if keep is not None:
-                if item == keep:
-                    to_select = row
-            elif row.is_current and to_select is None:
+            if keep is not None and item == keep:
                 to_select = row
+            if row.is_current and current_row is None:
+                current_row = row
+        # Keep the selection; fall back to the current theme if the item is gone
+        to_select = to_select or current_row
 
         if not self.all_items and self.empty_msg_key:
             self.placeholder.set_text(_(self.empty_msg_key))
@@ -211,6 +212,10 @@ class ThemeList(Gtk.Box):
     def on_search_changed(self, entry):
         self._query = entry.get_text().strip().lower()
         self.listbox.invalidate_filter()
+        # Never leave a hidden row selected: Apply would act on an item the user cannot see
+        row = self.listbox.get_selected_row()
+        if row is not None and not self._filter_row(row):
+            self.listbox.unselect_all()
 
     def focus_search(self):
         self.search_entry.grab_focus()

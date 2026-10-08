@@ -1,4 +1,6 @@
-from gi.repository import Gtk
+import threading
+
+from gi.repository import GLib, Gtk
 
 from ..i18n import _
 
@@ -74,3 +76,20 @@ def make_icon_only_button(icon_names, tooltip):
     btn = Gtk.Button.new_from_icon_name(pick_icon(*icon_names), Gtk.IconSize.BUTTON)
     btn.set_tooltip_text(tooltip)
     return btn
+
+
+# Run func() in a thread; callback(result, error) runs on the main loop unless the widget is gone
+def run_async(widget, func, callback):
+    def worker():
+        try:
+            result, error = func(), None
+        except Exception as exc:
+            result, error = None, exc
+        GLib.idle_add(deliver, result, error)
+
+    def deliver(result, error):
+        if isinstance(widget.get_toplevel(), Gtk.Window):
+            callback(result, error)
+        return False
+
+    threading.Thread(target=worker, daemon=True).start()

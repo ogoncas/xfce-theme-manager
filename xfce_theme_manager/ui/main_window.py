@@ -3,17 +3,21 @@ import os
 from gi.repository import Gio, GLib, Gtk
 
 from ..backend import (
+    get_current_cursor_theme,
     get_current_gtk_theme,
     get_current_icon_theme,
     get_current_mousepad_theme,
     get_current_rofi_theme,
     get_current_xfwm_theme,
+    get_cursor_themes,
     get_gtk_themes,
     get_icon_themes,
     get_mousepad_themes,
     get_rofi_themes,
     get_xfwm_themes,
+    process_running,
     rofi_theme_matches,
+    set_cursor_theme,
     set_gtk_theme,
     set_icon_theme,
     set_mousepad_theme,
@@ -41,6 +45,7 @@ class MainWindow(Gtk.ApplicationWindow):
         ("gtk", "tab_gtk"),
         ("xfwm", "tab_xfwm"),
         ("icons", "tab_icons"),
+        ("cursors", "tab_cursors"),
         ("fonts", "tab_fonts"),
         ("wallpaper", "tab_wallpaper"),
         ("mousepad", "tab_mousepad"),
@@ -58,7 +63,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         cfg = load_config()
         if size is None:
-            size = (_int_or(cfg.get("window_width"), 760), _int_or(cfg.get("window_height"), 620))
+            size = (_int_or(cfg.get("window_width"), 840), _int_or(cfg.get("window_height"), 620))
         self.set_default_size(*size)
         self.set_icon_name(pick_icon(*APP_ICON_NAMES))
         self.use_header = cfg.get("titlebar", "header") != "native"
@@ -93,6 +98,12 @@ class MainWindow(Gtk.ApplicationWindow):
 
         switcher = self._build_switcher()
         switcher.set_halign(Gtk.Align.CENTER)
+        # Scrolls sideways when the window is too narrow for every tab
+        self.tab_scroller = Gtk.ScrolledWindow()
+        self.tab_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
+        self.tab_scroller.set_shadow_type(Gtk.ShadowType.NONE)
+        self.tab_scroller.set_propagate_natural_height(True)
+        self.tab_scroller.add(switcher)
 
         # Toast bar at the top for quick, non-blocking messages
         self.toast_label = Gtk.Label(xalign=0)
@@ -107,7 +118,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.toast_revealer.show()
 
         top_row = Gtk.Box(spacing=8)
-        top_row.pack_start(switcher, True, False, 0)
+        top_row.pack_start(self.tab_scroller, True, True, 0)
         if not self.use_header:
             top_row.pack_end(settings_btn, False, False, 0)
 
@@ -123,6 +134,8 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self._ensure_page("collections")
         GLib.idle_add(self._build_remaining_pages, priority=GLib.PRIORITY_LOW)
+
+        self._warn_if_no_settings_daemon()
 
         self.connect("notify::is-active", self._on_active_changed)
         self.connect("delete-event", self._on_delete_event)
@@ -146,6 +159,25 @@ class MainWindow(Gtk.ApplicationWindow):
     def _on_tab_toggled(self, button, name):
         if button.get_active():
             self.stack.set_visible_child_name(name)
+            GLib.idle_add(self._scroll_tab_into_view, button)
+
+    def _scroll_tab_into_view(self, button):
+        alloc = button.get_allocation()
+        adj = self.tab_scroller.get_hadjustment()
+        page = adj.get_page_size()
+        if alloc.x < adj.get_value():
+            adj.set_value(alloc.x)
+        elif alloc.x + alloc.width > adj.get_value() + page:
+            adj.set_value(alloc.x + alloc.width - page)
+        return False
+
+    # GTK, icon, cursor and font changes reach apps through xfsettingsd
+    def _warn_if_no_settings_daemon(self):
+        if getattr(self.app, "settings_warned", False):
+            return
+        self.app.settings_warned = True
+        if not process_running("xfsettingsd"):
+            GLib.idle_add(lambda: self.show_toast(_("warn_no_xsettings"), 7000) or False)
 
     def _build_page(self, name):
         if name == "collections":
@@ -161,6 +193,9 @@ class MainWindow(Gtk.ApplicationWindow):
         if name == "icons":
             return ThemeList(get_icon_themes, get_current_icon_theme, set_icon_theme,
                              empty_msg_key="empty_icons")
+        if name == "cursors":
+            return ThemeList(get_cursor_themes, get_current_cursor_theme, set_cursor_theme,
+                             empty_msg_key="empty_cursors")
         if name == "wallpaper":
             return WallpaperTab(open_settings_cb=self.on_open_settings)
         if name == "mousepad":
@@ -196,6 +231,13 @@ class MainWindow(Gtk.ApplicationWindow):
         button = self._tab_buttons.get(name)
         if button is not None and not button.get_active():
             button.set_active(True)
+
+    # Re-read the current values in every tab that is already built
+    def refresh_pages(self):
+        for holder in self._holders.values():
+            for page in holder.get_children():
+                if hasattr(page, "refresh_current"):
+                    page.refresh_current()
 
     def _current_page(self):
         holder = self.stack.get_visible_child()

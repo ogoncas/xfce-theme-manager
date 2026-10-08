@@ -5,8 +5,8 @@ from gi.repository import GLib, Gtk
 from ..config import get_full_config, save_config
 from ..constants import APP_ICON_NAMES, APP_NAME, APP_VERSION, DEVELOPER, GITHUB_URL, LICENSE_NAME
 from ..i18n import _, detect_system_language, i18n
-from ..paths import DEFAULT_GTK_DIRS, DEFAULT_ICON_DIRS, DEFAULT_ROFI_DIRS, DEFAULT_WALLPAPER_DIRS
-from .widgets import ICON_ADD, ICON_REMOVE, make_icon_only_button, pick_icon
+from ..paths import DEFAULT_GTK_DIRS, DEFAULT_ICON_DIRS, DEFAULT_ROFI_DIRS, default_wallpaper_dirs
+from .widgets import ICON_ADD, ICON_REMOVE, make_icon_only_button, pick_icon, show_error_dialog
 
 
 # Edits the in-memory list; it is saved only when Settings are applied
@@ -193,7 +193,7 @@ class SettingsWindow(Gtk.Dialog):
         box.pack_start(intro, False, False, 0)
 
         categories = [
-            ("folders_wallpaper", "wallpaper_folders", DEFAULT_WALLPAPER_DIRS, None),
+            ("folders_wallpaper", "wallpaper_folders", default_wallpaper_dirs(), None),
             ("folders_gtk", "gtk_theme_folders", DEFAULT_GTK_DIRS, None),
             ("folders_icons", "icon_theme_folders", DEFAULT_ICON_DIRS, None),
             ("folders_rofi", "rofi_theme_folders", DEFAULT_ROFI_DIRS, None),
@@ -263,8 +263,13 @@ class SettingsWindow(Gtk.Dialog):
         if response == Gtk.ResponseType.OK:
             changed = self.pending_config != self._original_config
             if changed:
-                save_config(self.pending_config)
-                i18n.apply_language(self.pending_config.get("language", "auto"))
+                try:
+                    save_config(self.pending_config)
+                except OSError as exc:
+                    changed = False
+                    show_error_dialog(self.get_transient_for(), _("err_config_save", detail=str(exc)))
+                else:
+                    i18n.apply_language(self.pending_config.get("language", "auto"))
             applied = changed
         self.destroy()
         if applied:

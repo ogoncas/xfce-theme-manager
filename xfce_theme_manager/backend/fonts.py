@@ -122,3 +122,13 @@ FONT_TARGETS = (
     ("monospace", get_monospace_font, set_monospace_font),
     ("terminal", get_terminal_font, set_terminal_font),
 )
+
+
+def get_current_fonts():
+    """Return {key: font} for every font that is set."""
+    fonts = {}
+    for key, getter, _setter in FONT_TARGETS:
+        value = getter()
+        if value:
+            fonts[key] = value
+    return fonts

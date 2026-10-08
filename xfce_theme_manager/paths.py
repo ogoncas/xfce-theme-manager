@@ -23,7 +23,8 @@ def data_subdirs(subpath, *legacy_dirs):
     return dedupe(dirs)
 
 
-def _default_wallpaper_dirs():
+# Computed on demand so a folder created while the app runs is picked up
+def default_wallpaper_dirs():
     candidates = data_subdirs("backgrounds")
     home = os.path.expanduser("~")
     # Honor xdg-user-dirs (e.g. ~/Imagens on Portuguese systems)
@@ -34,7 +35,6 @@ def _default_wallpaper_dirs():
     return [d for d in dedupe(candidates) if os.path.isdir(d)]
 
 
-DEFAULT_WALLPAPER_DIRS = _default_wallpaper_dirs()
 DEFAULT_GTK_DIRS = data_subdirs("themes", "~/.themes")
 DEFAULT_ICON_DIRS = data_subdirs("icons", "~/.icons")
 DEFAULT_ROFI_DIRS = dedupe(

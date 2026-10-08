@@ -13,17 +13,20 @@ xfce_theme_manager/
 ├── fileio.py                  atomic file writes
 ├── thumbnails.py              thumbnails (shared Thunar/Tumbler cache)
 ├── backend/                   no UI: reads and applies system settings
-│   ├── common.py              BackendError, run(), xfconf helpers, theme lookup
-│   ├── gtk.py  icons.py  wallpaper.py  rofi.py  mousepad.py
+│   ├── common.py              BackendError, xfconf over D-Bus (xfconf-query fallback), theme lookup
+│   ├── gtk.py  xfwm.py  icons.py  cursors.py  wallpaper.py  rofi.py  mousepad.py
+│   ├── fonts.py               interface, title, monospace (xfconf) and terminal (terminalrc) fonts
 │   └── collections_apply.py   applies a whole collection
 └── ui/                        screens
-    ├── css.py  widgets.py     app CSS, icons, dialogs, buttons
-    ├── theme_list.py          filterable list (GTK, icons, Rofi, Mousepad)
+    ├── css.py  widgets.py     app CSS, icons, dialogs, buttons, run_async()
+    ├── theme_list.py          filterable list (GTK, XFWM, icons, cursors, Rofi, Mousepad)
+    ├── fonts_tab.py           Fonts tab (one font button per setting)
     ├── collections_tab.py     Collections tab + edit dialog
     ├── wallpaper_tab.py       Wallpaper tab
     ├── settings_window.py     Settings (general, folders, about)
     └── main_window.py         main window
 packaging/build-deb.sh         builds the .deb
+tests/                         pytest suite (pure logic, locale parity)
 ```
 
 Where to change things:

@@ -1,5 +1,8 @@
 import os
 import subprocess
+import threading
+
+from gi.repository import Gio, GLib
 
 from ..i18n import _
 
@@ -23,7 +26,67 @@ def run(cmd, check=True, timeout=8):
         raise BackendError(str(e)) from e
 
 
+# xfconf over D-Bus (no process per call); xfconf-query is the fallback
+_XFCONF_NAME = "org.xfce.Xfconf"
+_XFCONF_PATH = "/org/xfce/Xfconf"
+_XFCONF_ERROR_PREFIX = "org.xfce.Xfconf.Error"
+_DBUS_TIMEOUT_MS = 3000
+_proxy = None
+_proxy_lock = threading.Lock()
+_bus_failed = False
+
+_VARIANT_TYPES = {"string": "s", "int": "i", "uint": "u", "bool": "b", "double": "d"}
+
+
+def _xfconf_proxy():
+    global _proxy, _bus_failed
+    with _proxy_lock:
+        if _proxy is None and not _bus_failed:
+            try:
+                _proxy = Gio.DBusProxy.new_for_bus_sync(
+                    Gio.BusType.SESSION,
+                    Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES | Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS,
+                    None, _XFCONF_NAME, _XFCONF_PATH, _XFCONF_NAME, None,
+                )
+            except GLib.Error:
+                _bus_failed = True
+        return _proxy
+
+
+class _PropertyNotFound(Exception):
+    pass
+
+
+# Returns the unpacked reply; raises _PropertyNotFound for xfconf errors, GLib.Error if D-Bus is unusable
+def _dbus_call(method, params):
+    proxy = _xfconf_proxy()
+    if proxy is None:
+        raise GLib.Error("xfconf D-Bus service unavailable")
+    try:
+        reply = proxy.call_sync(method, params, Gio.DBusCallFlags.NONE, _DBUS_TIMEOUT_MS, None)
+    except GLib.Error as e:
+        if Gio.DBusError.is_remote_error(e):
+            name = Gio.DBusError.get_remote_error(e) or ""
+            if name.startswith(_XFCONF_ERROR_PREFIX):
+                raise _PropertyNotFound(e.message) from e
+        raise
+    return reply.unpack()
+
+
+def _value_to_text(value):
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return value if isinstance(value, str) else str(value)
+
+
 def xfconf_get(channel, prop):
+    try:
+        (value,) = _dbus_call("GetProperty", GLib.Variant("(ss)", (channel, prop)))
+        return _value_to_text(value) or None
+    except _PropertyNotFound:
+        return None
+    except (GLib.Error, ValueError):
+        pass
     try:
         out = run(["xfconf-query", "-c", channel, "-p", prop]).stdout.strip()
     except BackendError:
@@ -31,9 +94,65 @@ def xfconf_get(channel, prop):
     return out or None
 
 
+def xfconf_list(channel):
+    """Return {property: value-as-text} for a whole channel."""
+    try:
+        (props,) = _dbus_call("GetAllProperties", GLib.Variant("(ss)", (channel, "/")))
+        return {key: _value_to_text(value) for key, value in props.items()}
+    except _PropertyNotFound:
+        return {}
+    except (GLib.Error, ValueError):
+        pass
+    try:
+        out = run(["xfconf-query", "-c", channel, "-lv"]).stdout
+    except BackendError:
+        return {}
+    result = {}
+    for line in out.splitlines():
+        parts = line.strip().split(None, 1)
+        if parts:
+            result[parts[0]] = parts[1].strip() if len(parts) > 1 else ""
+    return result
+
+
 def xfconf_set(channel, prop, value, vtype="string"):
-    # --create adds the property if it does not exist yet
-    run(["xfconf-query", "-c", channel, "-p", prop, "--create", "-t", vtype, "-s", value])
+    code = _VARIANT_TYPES.get(vtype)
+    if code is not None:
+        if code in "iu":
+            payload = int(value)
+        elif code == "b":
+            payload = str(value).lower() in ("1", "true")
+        elif code == "d":
+            payload = float(value)
+        else:
+            payload = value
+        try:
+            _dbus_call("SetProperty", GLib.Variant(
+                "(ssv)", (channel, prop, GLib.Variant(code, payload))))
+            return
+        except _PropertyNotFound as e:
+            raise BackendError(str(e)) from e
+        except (GLib.Error, ValueError):
+            pass
+    # --set=VALUE keeps values that start with "-" from being read as options
+    run(["xfconf-query", "-c", channel, "-p", prop, "--create", "-t", vtype, "--set=" + str(value)])
+
+
+def process_running(name):
+    try:
+        entries = os.listdir("/proc")
+    except OSError:
+        return True
+    for entry in entries:
+        if not entry.isdigit():
+            continue
+        try:
+            with open("/proc/%s/comm" % entry, encoding="utf-8") as f:
+                if f.read().strip() == name:
+                    return True
+        except OSError:
+            continue
+    return False
 
 
 def list_theme_dirs(dirs, marker_subpath):

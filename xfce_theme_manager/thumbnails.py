@@ -24,6 +24,24 @@ def _fit_pixbuf(pixbuf, size):
     )
 
 
+def _oriented(pixbuf):
+    return pixbuf.apply_embedded_orientation() or pixbuf
+
+
+# Full-size decode with EXIF rotation, scaled to fit width x height
+def load_preview(path, width, height):
+    try:
+        pixbuf = _oriented(GdkPixbuf.Pixbuf.new_from_file(path))
+    except GLib.Error:
+        return None
+    w, h = pixbuf.get_width(), pixbuf.get_height()
+    scale = min(width / w, height / h, 1.0)
+    if scale >= 1.0:
+        return pixbuf
+    return pixbuf.scale_simple(max(1, round(w * scale)), max(1, round(h * scale)),
+                               GdkPixbuf.InterpType.BILINEAR)
+
+
 # Use the cached thumbnail if still valid, otherwise decode the image
 def load_thumbnail(path, size):
     try:
@@ -40,6 +58,6 @@ def load_thumbnail(path, size):
         if cached.get_option("tEXt::Thumb::MTime") == mtime:
             return _fit_pixbuf(cached, size)
     try:
-        return GdkPixbuf.Pixbuf.new_from_file_at_scale(path, size, size, True)
+        return _oriented(GdkPixbuf.Pixbuf.new_from_file_at_scale(path, size, size, True))
     except GLib.Error:
         return None

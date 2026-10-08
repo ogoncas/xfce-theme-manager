@@ -1,5 +1,7 @@
 from ..i18n import _
 from .common import BackendError
+from .cursors import set_cursor_theme
+from .fonts import FONT_TARGETS
 from .gtk import set_gtk_theme
 from .icons import set_icon_theme
 from .mousepad import set_mousepad_theme
@@ -13,6 +15,7 @@ def apply_collection(col_data):
         ("gtk", "label_gtk", set_gtk_theme),
         ("xfwm", "label_xfwm", set_xfwm_theme),
         ("icon", "label_icons", set_icon_theme),
+        ("cursor", "label_cursor", set_cursor_theme),
         ("wallpaper", "label_wallpaper", set_wallpaper),
         ("rofi", "label_rofi", set_rofi_theme),
         ("mousepad", "label_mousepad", set_mousepad_theme),
@@ -30,6 +33,17 @@ def apply_collection(col_data):
             setter(value)
         except Exception as e:
             errors.append(f"{_(label_key)} {e}")
+
+    fonts = col_data.get("fonts")
+    if isinstance(fonts, dict):
+        for key, _getter, setter in FONT_TARGETS:
+            value = fonts.get(key)
+            if not value:
+                continue
+            try:
+                setter(value)
+            except Exception as e:
+                errors.append(f"{_('font_' + key)} {e}")
 
     if errors:
         raise BackendError("\n".join(errors))

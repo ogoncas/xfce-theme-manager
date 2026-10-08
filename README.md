@@ -5,11 +5,12 @@ A small GTK 3 app to change your XFCE look from one window.
 - GTK themes
 - XFWM (window decoration) themes, in their own tab
 - Icon themes
+- Cursor themes
 - Fonts: interface, window title, monospace and terminal
 - Wallpapers
 - Rofi themes
 - Mousepad color schemes
-- Collections: save and re-apply a full combination of themes, icons, wallpaper, Rofi and Mousepad
+- Collections: save and re-apply a full combination of themes, icons, cursor, fonts, wallpaper, Rofi and Mousepad
 - Extra theme and wallpaper folders
 - English and Portuguese (follows the system language)
 
@@ -18,7 +19,7 @@ A small GTK 3 app to change your XFCE look from one window.
 Debian, Ubuntu, Xubuntu, Mint:
 
 ```
-sudo apt install ./xfce-theme-manager_2.1_all.deb
+sudo apt install ./xfce-theme-manager_2.5_all.deb
 ```
 
 Download the `.deb` from the [Releases](https://github.com/ogoncas/xfce-themes/releases) page, then launch **XFCE Theme Manager** from the menu, from Settings Manager (Personal section) or run `xfce-theme-manager`.
@@ -40,6 +41,12 @@ python3 app.py
 ```
 
 The package is written to `dist/`.
+
+## Tests
+
+```
+python3 -m pytest tests
+```
 
 ## Contributing
 

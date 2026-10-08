@@ -11,7 +11,7 @@ from .common import BackendError
 
 
 ROFI_CONFIG = os.path.join(GLib.get_user_config_dir(), "rofi", "config.rasi")
-_ROFI_THEME_RE = re.compile(r'^[ \t]*@theme[ \t]+(?:"([^"\n]+)"|([^\s"]+))', re.MULTILINE)
+_ROFI_THEME_RE = re.compile(r'^[ \t]*@theme[ \t]+(?:"((?:[^"\\\n]|\\.)+)"|([^\s"]+))', re.MULTILINE)
 
 
 def get_rofi_themes():
@@ -35,7 +35,11 @@ def get_current_rofi_theme():
     except OSError:
         return None
     m = _ROFI_THEME_RE.search(content)
-    return (m.group(1) or m.group(2)) if m else None
+    if not m:
+        return None
+    if m.group(1):
+        return re.sub(r"\\(.)", r"\1", m.group(1))
+    return m.group(2)
 
 
 # `current` can be a path, start with ~, or be just the theme name
@@ -55,7 +59,8 @@ def rofi_theme_matches(item, current):
 
 
 def set_rofi_theme(theme_path):
-    theme_line = '@theme "{}"'.format(theme_path.replace('"', '\\"'))
+    escaped = theme_path.replace("\\", "\\\\").replace('"', '\\"')
+    theme_line = '@theme "{}"'.format(escaped)
     try:
         try:
             with open(ROFI_CONFIG, encoding="utf-8", errors="ignore") as f:
